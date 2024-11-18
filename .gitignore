@@ -1,0 +1,36 @@
+# IDE
+.vscode
+account.json
+keystore.json
+
+# Python
+__pycache__
+env
+.env
+
+test.*
+
+# starknet 
+node.json
+*.deployments.txt
+artifacts
+target
+Scarb.lock
+
+# nile
+127.0.0.1.*
+
+# Protostar
+build
+*logs.json
+
+.DS_Store
+
+# Starknet foundry
+.snfoundry_cache
+
+# deployment
+tmp
+.tmp*
+old*
+scripts/*.log
