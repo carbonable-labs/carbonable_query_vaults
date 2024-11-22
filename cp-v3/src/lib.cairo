@@ -20,6 +20,7 @@ mod contracts {
     mod offsetter;
     mod project;
     mod resale;
+    mod vault;
 }
 
 mod mock {
