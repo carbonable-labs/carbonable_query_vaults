@@ -4,24 +4,18 @@ use starknet::{ContractAddress, contract_address_const};
 
 // External deps
 
-// use openzeppelin::token::erc1155::ERC1155Component;
 use snforge_std as snf;
-use snforge_std::{
-    ContractClassTrait, EventSpy, start_cheat_caller_address, stop_cheat_caller_address, spy_events,
-    cheatcodes::events::{EventSpyAssertionsTrait, EventSpyTrait, EventsFilterTrait}
-};
+use snforge_std::{ContractClassTrait, start_cheat_caller_address, stop_cheat_caller_address,};
 
 // Models 
 
 use carbon_v3::models::carbon_vintage::{CarbonVintage, CarbonVintageType};
-use carbon_v3::models::constants::{CC_DECIMALS_MULTIPLIER, MULTIPLIER_TONS_TO_MGRAMS};
 
 // Components
 
 use carbon_v3::components::vintage::interface::{
     IVintage, IVintageDispatcher, IVintageDispatcherTrait
 };
-use carbon_v3::components::minter::interface::{IMint, IMintDispatcher, IMintDispatcherTrait};
 
 // Contracts
 
@@ -32,15 +26,9 @@ use carbon_v3::contracts::project::{
 
 use carbon_v3::contracts::vault::{Vault, IVaultDispatcher, IVaultDispatcherTrait};
 
-use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-
-
 use super::tests_lib::{
-    equals_with_error, deploy_project, setup_project, default_setup_and_deploy,
-    perform_fuzzed_transfer, buy_utils, deploy_erc20, deploy_minter, deploy_offsetter,
-    helper_sum_balance, helper_check_vintage_balances, helper_get_token_ids,
-    helper_expected_transfer_event, helper_expected_transfer_single_events, helper_get_cc_amounts,
-    deploy_vault
+    default_setup_and_deploy, deploy_erc20, deploy_minter, helper_sum_balance,
+    helper_check_vintage_balances, helper_get_token_ids, deploy_vault, equals_with_error
 };
 
 fn get_values(token_ids: Span<u256>, cc_to_mint: u256) -> Array<u256> {
@@ -109,15 +97,12 @@ fn test_batch_getter() {
     let res = vault_dispatcher.batch_getter(array![alice, bob, john]);
 
     assert(res.len() == token_ids.len() * 3, 'Wrong length');
-// println!("length: {}", res.len());
-// let info_1 = res.at(0);
-// let info_22 = res.at(22);
 
-// println!("balance: {}", info_1.balance);
-// println!("status: {}", info_1.status);
-// println!("token id: {}", info_1.token_id);
-// println!("token id: {}", info_22.token_id);
-// println!("owner: {:?}", info_22.owner);
-// assert(*info_1.owner == alice, 'wrong owner');
-// assert(*info_22.owner == bob, 'wrong owner');
+    assert(*res.at(0).owner == alice, 'wrong owner');
+    assert(*res.at(token_ids.len()).owner == bob, 'wrong owner');
+    assert(*res.at(token_ids.len() * 2).owner == john, 'wrong owner');
+
+    assert(*res.at(0).balance == project.balance_of(alice, 1), 'wrong balance');
+    assert(*res.at(0).year == vintages.get_carbon_vintage(1).year, 'wrong year');
+    assert(*res.at(0).status == vintages.get_carbon_vintage(1).status, 'wrong status');
 }
