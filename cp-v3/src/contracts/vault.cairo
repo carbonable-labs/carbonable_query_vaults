@@ -32,6 +32,12 @@ mod Vault {
         project_address: ContractAddress,
     }
 
+    // Constructor
+    #[constructor]
+    fn constructor(ref self: ContractState, project_address: ContractAddress) {
+        self.project_address.write(project_address);
+    }
+
     #[abi(embed_v0)]
     impl VaultImpl of super::IVault<ContractState> {
         fn batch_getter(
