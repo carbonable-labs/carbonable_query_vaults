@@ -140,10 +140,9 @@ fn default_setup_and_deploy() -> ContractAddress {
     project_address
 }
 
-fn deploy_vault(project_address: ContractAddress) -> ContractAddress {
+fn deploy_vault() -> ContractAddress {
     let contract = snf::declare("Vault").expect('Declaration failed');
-    let mut calldata: Array<felt252> = array![project_address.into()];
-    let (contract_address, _) = contract.deploy(@calldata).expect('Vault deployment failed');
+    let (contract_address, _) = contract.deploy(@array![]).expect('Vault deployment failed');
 
     contract_address
 }

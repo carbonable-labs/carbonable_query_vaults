@@ -1,7 +1,7 @@
 use starknet::{ContractAddress, ClassHash};
 use carbon_v3::models::carbon_vintage::{CarbonVintage, CarbonVintageType};
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Copy)]
 struct VintageInfo {
     owner: ContractAddress,
     token_id: u256,
@@ -10,20 +10,22 @@ struct VintageInfo {
     status: CarbonVintageType
 }
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Copy)]
 struct ProjectInfo {
     project: ContractAddress,
-    carbon_info: Span<VintageInfo>
+    vintage_info: Span<VintageInfo>
 }
 
 #[starknet::interface]
 trait IVault<TContractState> {
+    /// Get all vintage information for an array of users for a single project
     fn batch_getter(
         self: @TContractState,
         project_address: ContractAddress,
         user_addresses: Array<ContractAddress>
     ) -> Span<VintageInfo>;
 
+    /// Get all vintage information for a single user for an array of projects
     fn get_all_user_carbon_info(
         self: @TContractState,
         user_address: ContractAddress,
@@ -104,7 +106,7 @@ mod Vault {
 
                     let carbon_info_arr = self.batch_getter(*project, array![user_address]);
 
-                    res.append(ProjectInfo { project: *project, carbon_info: carbon_info_arr });
+                    res.append(ProjectInfo { project: *project, vintage_info: carbon_info_arr });
 
                     i += 1;
                 };
