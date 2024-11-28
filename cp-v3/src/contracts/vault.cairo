@@ -2,7 +2,7 @@ use starknet::{ContractAddress, ClassHash};
 use carbon_v3::models::carbon_vintage::{CarbonVintage, CarbonVintageType};
 
 #[derive(Drop, Serde)]
-struct CarbonInfo {
+struct VintageInfo {
     owner: ContractAddress,
     token_id: u256,
     balance: u256,
@@ -10,9 +10,25 @@ struct CarbonInfo {
     status: CarbonVintageType
 }
 
+#[derive(Drop, Serde)]
+struct ProjectInfo {
+    project: ContractAddress,
+    carbon_info: Span<VintageInfo>
+}
+
 #[starknet::interface]
 trait IVault<TContractState> {
-    fn batch_getter(self: @TContractState, addresses: Array<ContractAddress>) -> Span<CarbonInfo>;
+    fn batch_getter(
+        self: @TContractState,
+        project_address: ContractAddress,
+        user_addresses: Array<ContractAddress>
+    ) -> Span<VintageInfo>;
+
+    fn get_all_user_carbon_info(
+        self: @TContractState,
+        user_address: ContractAddress,
+        project_addresses: Array<ContractAddress>
+    ) -> Span<ProjectInfo>;
 }
 
 #[starknet::contract]
@@ -25,40 +41,30 @@ mod Vault {
         Project, IExternalDispatcher as IProjectDispatcher,
         IExternalDispatcherTrait as IProjectDispatcherTrait
     };
-    use super::{CarbonVintageType, CarbonInfo};
+    use super::{CarbonVintageType, VintageInfo, ProjectInfo};
 
     #[storage]
-    struct Storage {
-        project_address: ContractAddress,
-    }
-
-    // Constructor
-    #[constructor]
-    fn constructor(ref self: ContractState, project_address: ContractAddress) {
-        self.project_address.write(project_address);
-    }
+    struct Storage {}
 
     #[abi(embed_v0)]
     impl VaultImpl of super::IVault<ContractState> {
         fn batch_getter(
-            self: @ContractState, addresses: Array<ContractAddress>
-        ) -> Span<CarbonInfo> {
-            let mut res: Array<CarbonInfo> = array![];
+            self: @ContractState,
+            project_address: ContractAddress,
+            user_addresses: Array<ContractAddress>
+        ) -> Span<VintageInfo> {
+            let mut res: Array<VintageInfo> = array![];
 
-            let project_dispatcher = IProjectDispatcher {
-                contract_address: self.project_address.read()
-            };
-            let vintage_dispatcher = IVintageDispatcher {
-                contract_address: self.project_address.read()
-            };
+            let project_dispatcher = IProjectDispatcher { contract_address: project_address };
+            let vintage_dispatcher = IVintageDispatcher { contract_address: project_address };
 
             let num_vintages = vintage_dispatcher.get_num_vintages();
             let vintages = vintage_dispatcher.get_cc_vintages();
 
             let mut i = 0;
-            while i != addresses
+            while i != user_addresses
                 .len() {
-                    let address = addresses.at(i);
+                    let address = user_addresses.at(i);
 
                     let mut k = 0;
                     while k != num_vintages {
@@ -67,7 +73,7 @@ mod Vault {
                         let balance = project_dispatcher.balance_of(*address, token_id);
                         res
                             .append(
-                                CarbonInfo {
+                                VintageInfo {
                                     owner: *address,
                                     token_id,
                                     balance,
@@ -77,6 +83,28 @@ mod Vault {
                             );
                         k += 1;
                     };
+
+                    i += 1;
+                };
+
+            res.span()
+        }
+
+        fn get_all_user_carbon_info(
+            self: @ContractState,
+            user_address: ContractAddress,
+            project_addresses: Array<ContractAddress>
+        ) -> Span<ProjectInfo> {
+            let mut res: Array<ProjectInfo> = array![];
+
+            let mut i = 0;
+            while i != project_addresses
+                .len() {
+                    let project = project_addresses.at(i);
+
+                    let carbon_info_arr = self.batch_getter(*project, array![user_address]);
+
+                    res.append(ProjectInfo { project: *project, carbon_info: carbon_info_arr });
 
                     i += 1;
                 };
