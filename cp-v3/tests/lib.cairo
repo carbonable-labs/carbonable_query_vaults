@@ -5,5 +5,3 @@ mod test_offsetter;
 mod test_project;
 mod test_resale;
 mod test_vintage;
-mod test_vault;
-

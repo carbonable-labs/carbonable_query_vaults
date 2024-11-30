@@ -10,7 +10,6 @@ carbon_v3 = { path = "./cp-v3" }
 starknet = ">=2.6.0"
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.10.0" }
 
-
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.26.0" }
 
@@ -20,5 +19,6 @@ test = "snforge test --max-n-steps 30000000"
 [[target.starknet-contract]]
 sierra = true
 casm = true
+build-external-contracts = ["carbon_v3::contracts::*", "carbon_v3::mock::*",]
 
 [lib]

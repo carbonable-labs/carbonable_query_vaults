@@ -28,10 +28,3 @@ mod mock {
     mod metadata;
 }
 
-// #[cfg(test)]
-pub mod tests {
-    // pub mod lib {
-        pub mod tests_lib;
-    // }
-}
-

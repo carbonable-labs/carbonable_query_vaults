@@ -26,7 +26,7 @@ use carbon_v3::contracts::project::{
 
 use carbon_v3::contracts::vault::{Vault, IVaultDispatcher, IVaultDispatcherTrait};
 
-use carbon_v3::tests::tests_lib::{
+use super::utils::{
     default_setup_and_deploy, deploy_erc20, deploy_minter, helper_sum_balance,
     helper_check_vintage_balances, helper_get_token_ids, deploy_vault, equals_with_error
 };
